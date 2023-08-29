@@ -1,11 +1,12 @@
 <template>
-    <div>
-        <input type="text" v-model="searched" @keyup="$emit('crypto', searched)">
+    <div class="flex justify-center items-center flex-col">
+        <input type="text" v-model="searched" @keyup="$emit('crypto', searched)" class="border mt-5 w-56">
+        <div class="border w-56 h-auto overflow-scroll">
+            <h1 v-for="(crypto, index) in cryptos" :key="index" class="hover:cursor-pointer hover:bg-slate-300" @click="$emit('selectCrypto', crypto.id)">{{ crypto.name }}</h1>
+        </div>
+        
     </div>
 
-    <div>
-        <h1 v-for="(crypto, index) in cryptos" :key="index">{{ crypto.name }}</h1>
-    </div>
 </template>
 
 <script>
@@ -16,13 +17,15 @@ import { ref } from 'vue';
         props: {
             cryptos: Array
         },
-        emits: {
-            crypto
-        },
+        emits: [
+            'crypto',
+            'selectCrypto'
+        ],
         setup() {
             let searched = ref('');
+
             return {
-                searched
+                searched,
             }
         }
     }

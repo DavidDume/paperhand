@@ -17,14 +17,20 @@ const getCryptos = (searchCrypto) => {
   }
 };
 
+const selectCrypto = (crypto) => {
+  axios.get(`https://api.coingecko.com/api/v3/coins/${crypto}`).then(res => {
+    console.log(res.data);
+  });
+}
+
 </script>
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold underline">
-      Hello world!
+    <h1 class="text-3xl font-bold text-center">
+      Search Crypto
     </h1>
-    <CryptoSelector v-on:crypto="getCryptos" :cryptos="cryptos"/>
+    <CryptoSelector v-on:crypto="getCryptos" v-on:selectCrypto="selectCrypto" :cryptos="cryptos"/>
   </div>
 </template>
 
