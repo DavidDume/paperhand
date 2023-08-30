@@ -4,6 +4,8 @@ import { ref, onMounted } from 'vue';
 import CryptoSelector from './components/CryptoSelector.vue';
 
 let cryptos = ref([]);
+let selected = ref('')
+let cryptoPrice = ref('')
 
 const getCryptos = (searchCrypto) => {
   try {
@@ -18,9 +20,16 @@ const getCryptos = (searchCrypto) => {
 };
 
 const selectCrypto = (crypto) => {
-  axios.get(`https://api.coingecko.com/api/v3/coins/${crypto}`).then(res => {
-    console.log(res.data);
+  
+  axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${crypto.id}&vs_currencies=usd`).then(res => {
+    
+    const priceKey = Object.keys(res.data)[0]
+    
+    cryptoPrice.value = res.data[priceKey].usd
+
   });
+  selected.value = crypto.name;
+  cryptos.value = []
 }
 
 </script>
@@ -31,7 +40,12 @@ const selectCrypto = (crypto) => {
       Search Crypto
     </h1>
     <CryptoSelector v-on:crypto="getCryptos" v-on:selectCrypto="selectCrypto" :cryptos="cryptos"/>
+    <div v-if="selected">
+      <h1 class="text-1xl my-8 font-bold text-center">Crypto Selected: {{ selected }}</h1>
+    </div>
   </div>
+
+  
 </template>
 
 <style scoped>
