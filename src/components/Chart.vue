@@ -1,7 +1,14 @@
 <template>
     <div class="w-3/4 m-auto">
         <canvas ref="chartCanvas"></canvas>
-        <input type="range" v-model="selectedTimeFrame" @input="fetchHistoricalData" :min="0" :max="timeFrames.length - 1">
+        <div>
+            
+        </div>
+        <div>
+            <h3>Select the timeframes you wished you bought</h3>
+            <DatePicker range v-model="selectedTime" lang="en" @change="fetchHistoricalData(tokenId)"/>
+        </div>
+        
     </div>
 </template>
 
@@ -11,66 +18,75 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 
+import 'vue-datepicker-ui/lib/vuedatepickerui.css';
+import VueDatepickerUi from 'vue-datepicker-ui';
+
 export default {
     expose: ['fetchHistoricalData'],
+    components: {
+        DatePicker: VueDatepickerUi
+    },
+    props: {
+        tokenId: String
+    },
     setup() {
-    const chartCanvas = ref(null);
-    const selectedTimeFrame = ref(0);
-    const timeFrames = ['1d', '7d', '30d', '90d', '180d']; // Define your time frames
-    let chart;
 
-    const fetchHistoricalData = async (id) => {
+        let selectedTime = ref([new Date('2022-10-20'), new Date()])
 
-      try {
-       
-        const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}/market_chart`, {
-          params: {
-            vs_currency: 'usd',
-            days: 'max',
-            interval: 'daily'
-          },
-        });
+        const chartCanvas = ref(null);
+        const selectedTimeFrame = ref(0);
+        const timeFrames = ['1d', '7d', '30d', '90d', '180d']; 
+        let chart;
 
-        const data = response.data.prices;
-        console.log(data);
+        const fetchHistoricalData = async (id) => {
+            const unixTime = selectedTime.value.map(el => Math.floor(el.getTime() / 1000).toFixed(0))
+            console.log(unixTime);
+        try {
+        
+            const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}/market_chart/range?vs_currency=usd&from=${selectedTime[0]}&to=${selectedTime[1]}`);
 
-        const labels = data.map(entry => new Date(entry[0]).toLocaleDateString());
-        const values = data.map(entry => entry[1]);
+            const data = response.data.prices;
+            console.log(data);
 
-        if (chart) {
-          chart.data.labels = labels;
-          chart.data.datasets[0].data = values;
-          chart.update();
-        } else {
-          chart = new Chart(chartCanvas.value, {
-            type: 'line',
-            data: {
-              labels,
-              datasets: [
-                {
-                  label: 'Price',
-                  data: values,
-                  borderColor: 'blue',
-                  fill: false,
+            const labels = data.map(entry => new Date(entry[0]).toLocaleDateString());
+            
+            const values = data.map(entry => entry[1]);
+
+            if (chart) {
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.update();
+            } else {
+            chart = new Chart(chartCanvas.value, {
+                type: 'line',
+                data: {
+                labels,
+                datasets: [
+                    {
+                    label: 'Price',
+                    data: values,
+                    borderColor: 'blue',
+                    fill: false,
+                    },
+                ],
                 },
-              ],
-            },
-            options: {
-              // Configure your chart options
-            },
-          });
+                options: {
+                // Configure your chart options
+                },
+            });
+            }
+        } catch (error) {
+            console.error('Error fetching historical data:', error);
         }
-      } catch (error) {
-        console.error('Error fetching historical data:', error);
-      }
-    };
+        };
 
-    return {
-      chartCanvas,
-      selectedTimeFrame,
-      timeFrames,
-      fetchHistoricalData
+        return {
+            chartCanvas,
+            selectedTimeFrame,
+            timeFrames,
+            fetchHistoricalData,
+            selectedTime
+        };
+    },
     };
-  },
-};
 </script>

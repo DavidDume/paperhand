@@ -35,7 +35,7 @@ const selectCrypto = (crypto) => {
   cryptos.value = []
 
   chart.value.fetchHistoricalData(selected.value.id)
-  console.log(selected.id);
+
 }
 
 </script>
@@ -48,9 +48,9 @@ const selectCrypto = (crypto) => {
     <CryptoSelector v-on:crypto="getCryptos" v-on:selectCrypto="selectCrypto" :cryptos="cryptos"/>
     <div v-if="selected">
       <h1 class="text-1xl my-4 font-bold text-center">Crypto Selected: {{ selected.name }}</h1>
-      <h1 class="text-1xl font-bold text-center">Current Price: {{ cryptoPrice }}</h1>
+      <h1 class="text-1xl font-bold text-center">Current Price: {{ cryptoPrice }}$</h1>
     </div>
-    <Chart ref="chart"></Chart>
+    <Chart ref="chart" :tokenId="selected.id"></Chart>
   </div>
 
   
