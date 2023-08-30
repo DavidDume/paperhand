@@ -1,11 +1,14 @@
 <script setup>
 import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import CryptoSelector from './components/CryptoSelector.vue';
+import Chart from './components/Chart.vue';
 
 let cryptos = ref([]);
 let selected = ref('')
 let cryptoPrice = ref('')
+
+const chart = ref(null)
 
 const getCryptos = (searchCrypto) => {
   try {
@@ -28,8 +31,11 @@ const selectCrypto = (crypto) => {
     cryptoPrice.value = res.data[priceKey].usd
 
   });
-  selected.value = crypto.name;
+  selected.value = crypto;
   cryptos.value = []
+
+  chart.value.fetchHistoricalData(selected.value.id)
+  console.log(selected.id);
 }
 
 </script>
@@ -41,8 +47,10 @@ const selectCrypto = (crypto) => {
     </h1>
     <CryptoSelector v-on:crypto="getCryptos" v-on:selectCrypto="selectCrypto" :cryptos="cryptos"/>
     <div v-if="selected">
-      <h1 class="text-1xl my-8 font-bold text-center">Crypto Selected: {{ selected }}</h1>
+      <h1 class="text-1xl my-4 font-bold text-center">Crypto Selected: {{ selected.name }}</h1>
+      <h1 class="text-1xl font-bold text-center">Current Price: {{ cryptoPrice }}</h1>
     </div>
+    <Chart ref="chart"></Chart>
   </div>
 
   
