@@ -34,13 +34,17 @@ export default {
         let selectedTime = ref([new Date('2022-10-20'), new Date()])
 
         const chartCanvas = ref(null);
-        const selectedTimeFrame = ref(0);
-        const timeFrames = ['1d', '7d', '30d', '90d', '180d']; 
+        const medianPrice = ref(0)
         let chart;
 
         watch(selectedTime, () => {
             fetchHistoricalData(props.tokenId)
         })
+
+        const calcMedianPrice = (arr) => {
+            const total = arr.reduce((acc, curr) => acc + curr);
+            return (total / arr.length).toFixed(2)
+        }
 
         const fetchHistoricalData = async (id) => {
             const unixTime = selectedTime.value.map(el => Math.floor(el.getTime() / 1000).toFixed(0))
@@ -55,7 +59,7 @@ export default {
             const labels = data.map(entry => new Date(entry[0]).toLocaleDateString());
             
             const values = data.map(entry => entry[1]);
-
+            medianPrice.value = calcMedianPrice(values)
             if (chart) {
             chart.data.labels = labels;
             chart.data.datasets[0].data = values;
@@ -86,8 +90,6 @@ export default {
 
         return {
             chartCanvas,
-            selectedTimeFrame,
-            timeFrames,
             fetchHistoricalData,
             selectedTime
         };
