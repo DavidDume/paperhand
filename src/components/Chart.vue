@@ -1,15 +1,23 @@
 <template>
     <div class="w-3/4 m-auto">
         <canvas ref="chartCanvas"></canvas>
-        <div>
-            
+        <div class="flex justify-between items-center">
+            <div class="h-8">
+                <h3>Select the timeframes you wished you bought</h3>
+                <DatePicker range v-model="selectedTime" lang="en" @change="fetchHistoricalData(tokenId)"/>
+            </div>
+            <button @click="calcTotal">Calculate</button>
+            <div class="h-8">
+                <h3>Insert the quantity in $ you wish you bought</h3>
+                <input type="text" class="border" v-model="quantity">
+            </div>
         </div>
-        <div>
-            <h3>Select the timeframes you wished you bought</h3>
-            <DatePicker range v-model="selectedTime" lang="en" @change="fetchHistoricalData(tokenId)"/>
+        <div class="text-center" v-if="currTotal">
+            You would now have: {{ currTotal }}$
         </div>
-        
+             
     </div>
+    
 </template>
 
 <script>
@@ -27,7 +35,8 @@ export default {
         DatePicker: VueDatepickerUi
     },
     props: {
-        tokenId: String
+        tokenId: String,
+        currPrice: Number
     },
     setup(props) {
 
@@ -35,11 +44,17 @@ export default {
 
         const chartCanvas = ref(null);
         const medianPrice = ref(0)
+        const quantity = ref(0)
+        const currTotal = ref(0)
         let chart;
 
         watch(selectedTime, () => {
             fetchHistoricalData(props.tokenId)
         })
+
+        const calcTotal = () => {
+            currTotal.value = ((quantity.value / medianPrice.value) * props.currPrice).toFixed(2)
+        }
 
         const calcMedianPrice = (arr) => {
             const total = arr.reduce((acc, curr) => acc + curr);
@@ -48,18 +63,19 @@ export default {
 
         const fetchHistoricalData = async (id) => {
             const unixTime = selectedTime.value.map(el => Math.floor(el.getTime() / 1000).toFixed(0))
-            console.log(unixTime);
         try {
         
             const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}/market_chart/range?vs_currency=usd&from=${unixTime[0]}&to=${unixTime[1]}`);
 
             const data = response.data.prices;
-            console.log(data);
+            //console.log(data);
 
             const labels = data.map(entry => new Date(entry[0]).toLocaleDateString());
             
             const values = data.map(entry => entry[1]);
+
             medianPrice.value = calcMedianPrice(values)
+
             if (chart) {
             chart.data.labels = labels;
             chart.data.datasets[0].data = values;
@@ -91,7 +107,11 @@ export default {
         return {
             chartCanvas,
             fetchHistoricalData,
-            selectedTime
+            selectedTime,
+            medianPrice,
+            calcTotal,
+            currTotal,
+            quantity
         };
     },
     };

@@ -14,7 +14,6 @@ const getCryptos = (searchCrypto) => {
   try {
     axios.get(`https://api.coingecko.com/api/v3/search?query=${searchCrypto}`).then(res => {
       cryptos.value = res.data.coins;
-      console.log(res.data.coins);
     })
     
   } catch (error) {
@@ -50,7 +49,7 @@ const selectCrypto = (crypto) => {
       <h1 class="text-1xl my-4 font-bold text-center">Crypto Selected: {{ selected.name }}</h1>
       <h1 class="text-1xl font-bold text-center">Current Price: {{ cryptoPrice }}$</h1>
     </div>
-    <Chart ref="chart" :tokenId="selected.id"></Chart>
+    <Chart ref="chart" :tokenId="selected.id" :currPrice="Number(cryptoPrice)"></Chart>
   </div>
 
   
