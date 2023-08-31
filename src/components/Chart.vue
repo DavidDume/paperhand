@@ -14,7 +14,7 @@
 
 <script>
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 
@@ -29,7 +29,7 @@ export default {
     props: {
         tokenId: String
     },
-    setup() {
+    setup(props) {
 
         let selectedTime = ref([new Date('2022-10-20'), new Date()])
 
@@ -38,12 +38,16 @@ export default {
         const timeFrames = ['1d', '7d', '30d', '90d', '180d']; 
         let chart;
 
+        watch(selectedTime, () => {
+            fetchHistoricalData(props.tokenId)
+        })
+
         const fetchHistoricalData = async (id) => {
             const unixTime = selectedTime.value.map(el => Math.floor(el.getTime() / 1000).toFixed(0))
             console.log(unixTime);
         try {
         
-            const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}/market_chart/range?vs_currency=usd&from=${selectedTime[0]}&to=${selectedTime[1]}`);
+            const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}/market_chart/range?vs_currency=usd&from=${unixTime[0]}&to=${unixTime[1]}`);
 
             const data = response.data.prices;
             console.log(data);
